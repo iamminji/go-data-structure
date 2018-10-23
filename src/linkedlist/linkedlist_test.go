@@ -5,6 +5,9 @@ import (
 )
 
 func TestLinkedList_Add(t *testing.T) {
+	/*
+	   3 -> 1 -> 2
+	*/
 	ll := NewLinkedList()
 	ll.Add(3)
 	ll.Add(1)
@@ -15,6 +18,12 @@ func TestLinkedList_Add(t *testing.T) {
 }
 
 func TestLinkedList_Remove(t *testing.T) {
+	/*
+	   3 -> 10
+	   3 -> 10 -> 9 -> 8 -> 7 -> 6
+	   9 -> 8 -> 7
+	*/
+
 	ll := NewLinkedList()
 	ll.Add(3)
 	ll.Add(2)

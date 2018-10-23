@@ -4,12 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	. "types"
 )
-
-type Node struct {
-	value int
-	next  *Node
-}
 
 type LinkedList struct {
 	head   *Node
@@ -24,14 +20,14 @@ func NewLinkedList() *LinkedList {
 func (ll *LinkedList) Add(item int) {
 
 	if ll.head == nil {
-		node := Node{item, nil}
-		ll.head = &node
-		ll.tail = &node
+		node, _ := NewNode(item)
+		ll.head = node
+		ll.tail = node
 		ll.length = 1
 	} else {
-		node := Node{item, nil}
-		ll.tail.next = &node
-		ll.tail = ll.tail.next
+		node, _ := NewNode(item)
+		ll.tail.Next = node
+		ll.tail = ll.tail.Next
 		ll.length += 1
 	}
 }
@@ -39,15 +35,15 @@ func (ll *LinkedList) Add(item int) {
 func (ll *LinkedList) Remove(item int) {
 
 	head := ll.head
-	if head.value == item {
-		ll.head = head.next
+	if head.Item == item {
+		ll.head = head.Next
 	}
-	for head.next != nil {
-		if head.next.value == item {
-			head.next = head.next.next
+	for head.Next != nil {
+		if head.Next.Item == item {
+			head.Next = head.Next.Next
 			break
 		}
-		head = head.next
+		head = head.Next
 	}
 
 }
@@ -62,9 +58,16 @@ func (ll *LinkedList) Pretty() {
 
 	head := ll.head
 	for head != nil {
-		str.WriteString("Node(" + strconv.Itoa(head.value) + ")")
-		str.WriteString(" -> ")
-		head = head.next
+		switch head.Item.(type) {
+		case string:
+			str.WriteString("Node(" + head.Item.(string) + ") -> ")
+		case int:
+			str.WriteString("Node(" + strconv.Itoa(head.Item.(int)) + ") -> ")
+		default:
+			str.WriteString("Unknown Type")
+		}
+
+		head = head.Next
 	}
 
 	str.WriteString("nil")
