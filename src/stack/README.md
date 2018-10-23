@@ -1,6 +1,6 @@
 Implementation Stack
 ==
 
-- [ ] ArrayStack
-- [ ] QueueStack
-- [ ] MinStack 
+- [x] ArrayStack
+- [x] QueueStack
+- [x] MinStack 
