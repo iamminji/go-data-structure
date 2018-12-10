@@ -8,12 +8,10 @@ import (
 	"strings"
 )
 
-// TODO
-// Add Tail O(n) -> O(1)
-
 type MyNode struct {
 	idx  int
 	val  int
+	prev *MyNode
 	next *MyNode
 }
 
@@ -30,8 +28,12 @@ func Constructor() MyLinkedList {
 
 /** Get the value of the index-th node in the linked list. If the index is invalid, return -1. */
 func (this *MyLinkedList) Get(index int) int {
-	ptr := this.head
-	for ptr != nil {
+
+	if this.head == nil {
+		return -1
+	}
+	ptr := this.head.next
+	for ptr != nil && ptr.idx > -1 {
 		if ptr.idx == index {
 			return ptr.val
 		}
@@ -42,106 +44,111 @@ func (this *MyLinkedList) Get(index int) int {
 
 /** Add a node of value val before the first element of the linked list. After the insertion, the new node will be the first node of the linked list. */
 func (this *MyLinkedList) AddAtHead(val int) {
-	// 한 번도 값이 안 들어왔을 때
-	if this.head == nil {
-		node := &MyNode{idx: 0, val: val, next: nil}
-		this.head = node
-	} else {
-		node := &MyNode{idx: 0, val: val, next: this.head}
-		this.head = node
 
-		// idx increment
-		ptr := node.next
-		for ptr != nil {
-			ptr.idx += 1
-			ptr = ptr.next
-		}
+	if this.head == nil {
+		this.head = &MyNode{idx: -1}
+		this.tail = &MyNode{idx: -1}
 	}
+
+	node := &MyNode{val: val}
+	// 한번도 안들어왔을때
+	if this.head.next == nil {
+		node.idx = 0
+		node.prev = this.head
+		this.head.next = node
+		this.tail.prev = node
+		node.next = this.tail
+	} else {
+		temp := this.head.next
+
+		for temp != nil && temp.idx > -1 {
+			temp.idx += 1
+			temp = temp.next
+		}
+
+		ptr := this.head.next
+		ptr.prev = node
+		node.next = ptr
+		node.idx = 0
+		this.head.next = node
+	}
+
 	this.Length += 1
 }
 
 /** Append a node of value val to the last element of the linked list. */
 func (this *MyLinkedList) AddAtTail(val int) {
-	node := &MyNode{idx: this.Length, val: val, next: nil}
-
-	ptr := this.head
-	for ptr.next != nil {
-		ptr = ptr.next
+	if this.tail == nil {
+		this.head = &MyNode{idx: -1}
+		this.tail = &MyNode{idx: -1}
 	}
-	ptr.next = node
+
+	node := &MyNode{val: val, idx: this.Length}
+
+	temp := this.tail.prev
+	temp.next = node
+	node.prev = temp
+
+	node.next = this.tail
+	this.tail.prev = node
+
 	this.Length += 1
 }
 
 /** Add a node of value val before the index-th node in the linked list. If index equals to the length of linked list, the node will be appended to the end of linked list. If index is greater than the length, the node will not be inserted. */
 func (this *MyLinkedList) AddAtIndex(index int, val int) {
 
-	if this.head == nil {
-		if index == 0 {
-			this.AddAtHead(val)
-		}
-		return
-	}
-	if this.Length+1 < index {
-		// nothing
-	} else if this.Length+1 == index {
-		if this.head != nil {
-			this.AddAtTail(val)
-		} else {
-			this.AddAtHead(val)
-		}
-	} else if index == 0 {
+	if index == 0 {
 		this.AddAtHead(val)
+	} else if index == this.Length {
+		this.AddAtTail(val)
+	} else if index > this.Length {
+		return
 	} else {
-		node := &MyNode{idx: index, val: val}
-		ptr := this.head
-		var target *MyNode
+		ptr := this.head.next
+		node := &MyNode{val: val, idx: index}
+
 		for ptr != nil {
-			if ptr.idx == index-1 {
-				target = ptr.next
-				ptr.next = node
-				node.next = target
+			if ptr.idx == index {
+				temp := ptr.prev
+				temp.next = node
+				node.prev = temp
+				ptr.prev = node
+				node.next = ptr
 				break
 			}
 			ptr = ptr.next
 		}
-		for target != nil {
-			target.idx += 1
-			target = target.next
+
+		for ptr != nil && ptr.idx > -1 {
+			ptr.idx += 1
+			ptr = ptr.next
 		}
+
 		this.Length += 1
 	}
 }
 
 /** Delete the index-th node in the linked list, if the index is valid. */
 func (this *MyLinkedList) DeleteAtIndex(index int) {
+	ptr := this.head.next
 
-	if this.Length <= index || index < this.head.idx {
-		return
-	}
+	for ptr != nil {
+		if ptr.idx == index {
+			prev := ptr.prev
+			next := ptr.next
 
-	this.Length -= 1
-
-	var target *MyNode
-	if index == 0 {
-		target = this.head
-		this.head = target.next
-	} else {
-		ptr := this.head
-		for ptr != nil {
-			if ptr.idx == index-1 {
-				target = ptr.next
-				if target == nil {
-					// noting
-				} else {
-					ptr.next = target.next
-				}
-			}
-			ptr = ptr.next
+			prev.next = next
+			next.prev = prev
+			this.Length -= 1
+			break
 		}
+		ptr = ptr.next
 	}
-	for target != nil {
-		target.idx -= 1
-		target = target.next
+
+	for ptr != nil && ptr.idx > -1 {
+		ptr.idx -= 1
+		ptr = ptr.next
 	}
 }
 
@@ -150,6 +157,10 @@ func (this *MyLinkedList) String() string {
 	var str strings.Builder
 	ptr := this.head
 	for ptr != nil {
+		if ptr.idx == -1 {
+			ptr = ptr.next
+			continue
+		}
 		str.WriteString(fmt.Sprintf("Node(idx:%d, val:%d)", ptr.idx, ptr.val))
 		str.WriteString(" => ")
 		ptr = ptr.next
